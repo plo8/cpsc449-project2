@@ -14871,8 +14871,8 @@ INSERT INTO correct VALUES(2309,'augur');
 
 DROP TABLE IF EXISTS "game";
 CREATE TABLE "game"(
-    id INTEGER PRIMARY KEY, 
-    userId INTEGER,
+    id INTEGER PRIMARY KEY,
+    username TEXT, 
     wordId INTEGER,
     guesses INTEGER DEFAULT 6,
     finished BIT DEFAULT 0,
@@ -14882,15 +14882,11 @@ CREATE TABLE "game"(
 	guess4 VARCHAR(5) DEFAULT "", 
 	guess5 VARCHAR(5) DEFAULT "", 
 	guess6 VARCHAR(5) DEFAULT "", 
-    FOREIGN KEY(userId) REFERENCES userData(id), 
     FOREIGN KEY(wordId) REFERENCES correct(id)
 );
 
-DROP TABLE IF EXISTS "userData";
-CREATE TABLE IF NOT EXISTS "userData" (
-	"id"	INTEGER,
-	"username"	TEXT,
-	"password"	TEXT,
-	PRIMARY KEY("id")
-);
+CREATE INDEX correct_idx_00017a64 ON correct(word);
+CREATE INDEX valid_idx_00017a64 ON valid(word);
+CREATE INDEX game_idx_25674218 ON game(username);
+
 COMMIT;

@@ -1,5 +1,3 @@
-import dataclasses
-import collections
 from operator import itemgetter
 import databases
 from quart import Quart, g, request, jsonify, abort
@@ -11,12 +9,6 @@ import random
 app = Quart(__name__)
 QuartSchema(app)
 app.config.from_file(f"./etc/{__name__}.toml", toml.load)
-
-@dataclasses.dataclass
-class userData:
-    id: int
-    username: str
-    password: str
 
 async def _get_db():
     db = getattr(g, "_sqlite_db", None)
@@ -32,112 +24,16 @@ async def close_connection(exception):
     if db is not None:
         await db.disconnect()
 
-@app.route("/users/all", methods=["GET"])
-async def all_users():
-    db = await _get_db()
-    all_users = await db.fetch_all("SELECT * FROM userData;")
+@app.route("/", methods=["GET"])
+async def what():
+    auth = request.authorization
+    print(auth.username)
 
-    return list(map(dict, all_users))  
-
-
-#------------Registering a new user-----------------#
-
-@app.route("/register/", methods=["POST"])
-@validate_request(userData)
-async def register_user(data):
-    db = await _get_db()  
-    
-    userData = dataclasses.asdict(data)   
-    
-    try:
-        id = await db.execute(
-            """
-            INSERT INTO userData(id, username, password)
-            VALUES(:id, :username, :password)
-            """,
-            userData,
-        )
-    except sqlite3.IntegrityError as e:
-        abort(409, e)
-    
-    userData["id"] = id      
-    return jsonify({"statusCode": 200, "message": "Successfully registered!"})
-
-@app.errorhandler(RequestSchemaValidationError)
-def bad_request(e):
-    return {"error": str(e.validation_error)}, 400
-
-@app.errorhandler(409)
-def conflict(e):
-    return {"error": str(e)}, 409
-
-@app.errorhandler(401)
-def unauthorized(e):
-    return {"error": str(e)}, 401
-
-
-SearchParam = collections.namedtuple("SearchParam", ["name", "operator"])
-SEARCH_PARAMS = [
-    
-    SearchParam(
-        "username",
-        "=",
-    ),
-    SearchParam(
-        "password",
-        "=",
-    ),
-    
-]
-
-#-------------Authenticating the credentials for Login----------------
-@app.route('/auth', methods=['GET'])
-async def authenticate():
-    query_parameters = request.args
-    #db = await _get_db()    
-      
-    
-    sql = "SELECT username,password FROM userData"
-    conditions = []
-    values = {}
-
-    for param in SEARCH_PARAMS:
-        if query_parameters.get(param.name):
-            if param.operator == "=":
-                conditions.append(f"{param.name} = :{param.name}")
-                values[param.name] = query_parameters[param.name]               
-
-    if conditions:
-        sql += " WHERE "
-        sql += " AND ".join(conditions)
-
-    app.logger.debug(sql)
-
-    db = await _get_db()
-    results = await db.fetch_all(sql, values)  
-   
-    
-    my_list= list(map(dict, results))    
-    pwd = list(map(itemgetter('password'), my_list))
-    name = list(map(itemgetter('username'), my_list))    
-   
-    result_dict= {}
-
-    for key in name:
-         for value in pwd:
-             result_dict[key] = value
-             pwd.remove(value)
-             break      
-    
-
-    for key in result_dict:
-        if(request.authorization.password==result_dict[key] and request.authorization.username==key  ) :        
-            return jsonify({"statusCode": 200, "authenticated": "true"})   
-    # WWW-Authenticate error for 401
-    return jsonify({"statusCode": 401, "error": "Unauthorized", "message": "Login failed !" })     
-    
+    return {"message": "test route"}
     
 # ---------------GAME API---------------
+
+# ---------------HELPERS----------------
 
 def getGuessState(guess, secret):
     word = guess
@@ -209,39 +105,31 @@ async def updateGameState(game, word, db, finished = 0):
 async def newGame():
     db = await _get_db()
 
-    body = await request.get_json()
-    userId = body.get("userId")
+    auth = request.authorization
 
-    if not(userId):
-        abort(400, "Please provide the user id")
+    if not(auth) or not(auth.username):
+        abort(401, "Please provide the username")
 
-    user = await db.fetch_one("SELECT * FROM userData WHERE id=:userId", values={"userId": userId})
-
-    if not(user):
-        abort(404, "Could not find user with this id")
+    username = auth.username
 
     words = await db.fetch_all("SELECT * FROM correct")
     num = random.randrange(0, len(words), 1)
 
-    data = {"wordId": words[num][0], "userId": user[0]}
+    data = {"wordId": words[num][0], "username": username}
 
     id = await db.execute(
         """
-        INSERT INTO game(wordId, userId)
-        VALUES(:wordId, :userId)
+        INSERT INTO game(wordId, username)
+        VALUES(:wordId, :username)
         """,
         data)
 
     res = {"gameId": id, "guesses": 6}
     return res, 201
 
-@app.errorhandler(400)
-def noUserId(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 400
-
-@app.errorhandler(404)
-def userNotFound(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 404
+@app.errorhandler(401)
+def unauthorized(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 401
 
 # ---------------GUESS A WORD---------------
 
@@ -249,28 +137,27 @@ def userNotFound(e):
 async def guess(gameId):
     db = await _get_db()
 
-    body = await request.get_json()
+    auth = request.authorization
 
-    userId = body.get("userId")
+    if not(auth) or not(auth.username):
+        abort(401, "Please provide the username")
+
+    username = auth.username
+
+    body = await request.get_json()
     word = body.get("word").lower()
 
-    if not(userId) or not(word):
-        abort(400, "Please provide the user id and the guess word")
+    if not(word):
+        abort(400, "Please provide the guess word")
 
     game = await db.fetch_one("SELECT * FROM game WHERE id=:id", values={"id": gameId})
 
-    # Check iff game exists
+    # Check if game exists
     if not(game):
         abort(404, "Could not find a game with this id")
 
-    if int(userId) != game[1]:
+    if username != game[1]:
         abort(400, "This game does not belong to this user")
-
-    user = await db.fetch_one("SELECT * FROM userData WHERE id=:userId", values={"userId": userId})
-
-    # Check if user exists
-    if not(user):
-        abort(404, "Could not find this user")
 
     # Check if game is finished
     if game[4] == 1:
@@ -313,26 +200,31 @@ async def guess(gameId):
         "data": data}
 
 @app.errorhandler(400)
-def noUserId(e):
+def badRequest(e):
     return {"error": str(e).split(':', 1)[1][1:]}, 400
 
-@app.errorhandler(404)
-def userNotFound(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 404
+@app.errorhandler(401)
+def unauthorized(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 401
 
+@app.errorhandler(404)
+def noGameFound(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 404
 
 # ---------------LIST GAMES FOR A USER---------------
 
-@app.route("/users/<int:userId>/games", methods=["GET"])
-async def myGames(userId):
+@app.route("/my-games", methods=["GET"])
+async def myGames():
     db = await _get_db()
-    
-    user = await db.fetch_one("SELECT * FROM userData WHERE id=:id", values={"id": userId})
 
-    if not(user):
-        abort(404, "Could not find this user")
+    auth = request.authorization
 
-    games = await db.fetch_all("SELECT * FROM game WHERE userId=:id", values={"id": userId})
+    if not(auth) or not(auth.username):
+        abort(401, "Please provide the username")
+
+    username = auth.username
+
+    games = await db.fetch_all("SELECT * FROM game WHERE username=:username", values={"username": username})
 
     gamesList = list(map(dict, games))
     res = []
@@ -342,9 +234,9 @@ async def myGames(userId):
 
     return res
 
-@app.errorhandler(404)
-def userNotFound(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 404
+@app.errorhandler(401)
+def unauthorized(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 401
 
 # ---------------GET GAME STATE---------------
 
