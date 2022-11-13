@@ -2,10 +2,9 @@ PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 
 DROP TABLE IF EXISTS "userData";
-CREATE TABLE IF NOT EXISTS "userData" (
-	"id"	INTEGER,
-	"username"	TEXT,
+CREATE TABLE IF NOT EXISTS "userData" (	
+	"username"	TEXT UNIQUE NOT NULL,
 	"password"	TEXT,
-	PRIMARY KEY("id")
+	PRIMARY KEY("username")
 );
 COMMIT;

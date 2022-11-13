@@ -12,8 +12,7 @@ QuartSchema(app)
 app.config.from_file(f"./etc/{__name__}.toml", toml.load)
 
 @dataclasses.dataclass
-class userData:
-    id: int
+class userData:   
     username: str
     password: str
 
@@ -49,17 +48,17 @@ async def register_user(data):
     userData = dataclasses.asdict(data)   
     
     try:
-        id = await db.execute(
+        username = await db.execute(
             """
-            INSERT INTO userData(id, username, password)
-            VALUES(:id, :username, :password)
+            INSERT INTO userData(username, password)
+            VALUES(:username, :password)
             """,
             userData,
         )
     except sqlite3.IntegrityError as e:
         abort(409, e)
     
-    userData["id"] = id      
+    userData["username"] = username     
     return jsonify({"statusCode": 200, "message": "Successfully registered!"})
 
 @app.errorhandler(RequestSchemaValidationError)
@@ -131,6 +130,6 @@ async def authenticate():
 
     for key in result_dict:
         if(request.authorization.password==result_dict[key] and request.authorization.username==key  ) :        
-            return jsonify({"statusCode": 200, "authenticated": "true"})   
+            return jsonify({"authenticated": "true"})   
     # WWW-Authenticate error for 401
     return jsonify({"statusCode": 401, "error": "Unauthorized", "message": "Login failed !" }), 401     
