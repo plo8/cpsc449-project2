@@ -14871,7 +14871,7 @@ INSERT INTO correct VALUES(2309,'augur');
 
 DROP TABLE IF EXISTS "game";
 CREATE TABLE "game"(
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     username TEXT, 
     wordId INTEGER,
     guesses INTEGER DEFAULT 6,

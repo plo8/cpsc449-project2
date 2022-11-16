@@ -5,6 +5,7 @@ from quart_schema import validate_request, RequestSchemaValidationError, QuartSc
 import sqlite3
 import toml
 import random
+import uuid
 
 app = Quart(__name__)
 QuartSchema(app)
@@ -29,7 +30,7 @@ async def what():
     auth = request.authorization
     print(auth.username)
 
-    return {"message": "test route"}
+    return {"message": "test route", "id": uuid.uuid4()}
     
 # ---------------GAME API---------------
 
@@ -115,16 +116,17 @@ async def newGame():
     words = await db.fetch_all("SELECT * FROM correct")
     num = random.randrange(0, len(words), 1)
 
-    data = {"wordId": words[num][0], "username": username}
+    gameId = str(uuid.uuid4())
+    data = {"gameId": gameId, "wordId": words[num][0], "username": username}
 
-    id = await db.execute(
+    await db.execute(
         """
-        INSERT INTO game(wordId, username)
-        VALUES(:wordId, :username)
+        INSERT INTO game(id, wordId, username)
+        VALUES(:gameId, :wordId, :username)
         """,
         data)
 
-    res = {"gameId": id, "guesses": 6}
+    res = {"gameId": gameId, "guesses": 6}
     return res, 201
 
 @app.errorhandler(401)
@@ -133,7 +135,7 @@ def unauthorized(e):
 
 # ---------------GUESS A WORD---------------
 
-@app.route("/game/<int:gameId>", methods=["PATCH"])
+@app.route("/game/<string:gameId>", methods=["PATCH"])
 async def guess(gameId):
     db = await _get_db()
 
@@ -240,7 +242,7 @@ def unauthorized(e):
 
 # ---------------GET GAME STATE---------------
 
-@app.route("/game/<int:gameId>", methods=["GET"])
+@app.route("/game/<string:gameId>", methods=["GET"])
 async def getGame(gameId):
     db = await _get_db()
 
