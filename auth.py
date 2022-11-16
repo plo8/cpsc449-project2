@@ -7,6 +7,7 @@ from quart_schema import validate_request, RequestSchemaValidationError, QuartSc
 import sqlite3
 import toml
 
+
 app = Quart(__name__)
 QuartSchema(app)
 app.config.from_file(f"./etc/{__name__}.toml", toml.load)
@@ -44,7 +45,7 @@ async def all_users():
 @validate_request(userData)
 async def register_user(data):
     db = await _get_db()  
-    
+      
     userData = dataclasses.asdict(data)   
     
     try:
@@ -92,8 +93,7 @@ SEARCH_PARAMS = [
 @app.route('/auth', methods=['GET'])
 async def authenticate():
     query_parameters = request.args
-    #db = await _get_db()    
-      
+    #db = await _get_db()         
     
     sql = "SELECT username,password FROM userData"
     conditions = []
@@ -132,4 +132,4 @@ async def authenticate():
         if(request.authorization.password==result_dict[key] and request.authorization.username==key  ) :        
             return jsonify({"authenticated": "true"})   
     # WWW-Authenticate error for 401
-    return jsonify({"statusCode": 401, "error": "Unauthorized", "message": "Login failed !" }), 401     
+    return jsonify({"statusCode": 401, "error": "Unauthorized", "message": "Login failed !"}), 401     
