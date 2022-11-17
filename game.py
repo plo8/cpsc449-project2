@@ -25,12 +25,29 @@ async def close_connection(exception):
     if db is not None:
         await db.disconnect()
 
-@app.route("/", methods=["GET"])
-async def what():
-    auth = request.authorization
-    print(auth.username)
+@app.errorhandler(400)
+def badRequest(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 400
 
-    return {"message": "test route", "id": uuid.uuid4()}
+@app.errorhandler(401)
+def unauthorized(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 401, {"WWW-Authenticate": "Basic realm"}
+
+@app.errorhandler(404)
+def noGameFound(e):
+    return {"error": str(e).split(':', 1)[1][1:]}, 404
+
+# @app.route("/test", methods=["GET"])
+# async def what():
+#     auth = request.authorization
+
+#     if not auth or not auth.username or not auth.password:
+#         abort(401, "you are not authorized bro")
+
+#     print(auth.username)
+
+#     return {"message": "test route", "id": uuid.uuid4()}, 200, {"WWW-Authenticate": "Basic realm=bad"}
+
     
 # ---------------GAME API---------------
 
@@ -129,9 +146,9 @@ async def newGame():
     res = {"gameId": gameId, "guesses": 6}
     return res, 201
 
-@app.errorhandler(401)
-def unauthorized(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 401
+# @app.errorhandler(401)
+# def unauthorized(e):
+#     return {"error": str(e).split(':', 1)[1][1:]}, 401
 
 # ---------------GUESS A WORD---------------
 
@@ -201,18 +218,6 @@ async def guess(gameId):
         "gussesLeft": game[3] - 1, 
         "data": data}
 
-@app.errorhandler(400)
-def badRequest(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 400
-
-@app.errorhandler(401)
-def unauthorized(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 401
-
-@app.errorhandler(404)
-def noGameFound(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 404
-
 # ---------------LIST GAMES FOR A USER---------------
 
 @app.route("/my-games", methods=["GET"])
@@ -236,9 +241,9 @@ async def myGames():
 
     return res
 
-@app.errorhandler(401)
-def unauthorized(e):
-    return {"error": str(e).split(':', 1)[1][1:]}, 401
+# @app.errorhandler(401)
+# def unauthorized(e):
+#     return {"error": str(e).split(':', 1)[1][1:]}, 401
 
 # ---------------GET GAME STATE---------------
 
