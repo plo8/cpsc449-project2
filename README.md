@@ -3,6 +3,10 @@
 Guided by Professor: Kenytt Avery @ProfAvery
 
 # Project Members:
+Debdyuti Das
+Janiece Garcia
+Peining Lo
+Sravani Kallmepudi
 
 # Project description:
 
