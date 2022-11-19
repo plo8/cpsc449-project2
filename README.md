@@ -23,6 +23,7 @@ The following are the steps to run the project:
     > sudo apt install --yes nginx-extras
 3. Run init.sh to populate the database and automatically connect the api to the database. 
     > ./bin/init_auth.sh
+    
     > ./bin/init_game.sh
 4. start the services    
     > foreman start -m auth=1,game=3   
