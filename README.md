@@ -13,6 +13,10 @@ Guided by Professor: Kenytt Avery @ProfAvery
 
 This project is about splitting monolith service that exposed two different sets of resources in project 1, into two separate microservices and authenticating the endpoints of each service.
 
+This project is intented to effectively build a RESTful Web back-end API for a game which is similar to the very well known game "Wordle", with difference of few conditions or features from the original game. Some of these features which are included are letting more than one game to be played per day per player and as well as offering different games to different players.
+
+This web service is actually split into 2 microservices called users-api and games-api, which makes use of Python's Quart web framework, and utilize 6 endpoints to allow an user to interact with the game. Th web services also makes use of NginX for HTTP Authentication, as well as load balancing.
+
 Configuration files:
 1. Procfile is a mechanism for declaring what commands are run by your application to start the app 
 2. Update the nginx.config into default file present in /etc/nginx/sites-enabled
