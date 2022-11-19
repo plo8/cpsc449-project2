@@ -31,3 +31,15 @@ The following are the steps to run the project:
     > foreman start -m auth=1,game=3   
     
 Now the API can be run using Postman(the method which we followed) or using curl or httpie.
+
+Sample Requests:
+1. For registering an user:
+    > POST: http://tuffix-vm/register
+2. For authenticating the user:
+    > GET: 
+3. For creating a new game for an authenticated user:
+    > POST: http://tuffix-vm/game
+4. For getting the game state of the authenticated user:
+    > GET: http://tuffix-vm/game/:gameId
+5. List all the games for the authenticated user:
+    > GET: http://tuffix-vm/my-games   
