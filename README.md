@@ -21,17 +21,28 @@ In this project basically we are splitting monolith service that exposed two dif
 
 ## The following are the steps to run the project:
 1. Installing and configuring Nginx:
-    > sudo apt update
-    > sudo apt install --yes nginx-extras
-2. Clone the github repository https://github.com/plo8/cpsc449-project2.git
+```bash
+sudo apt update
+sudo apt install --yes nginx-extras
+```
+2. Clone the github repository:
+```bash
+git clone https://github.com/plo8/cpsc449-project2.git
+```
 3. Then cd into the cpsc449-project2 folder and run the following commands:
-    > mkdir var
-3. Run both the init scripts to populate the database and automatically connect the api to the database. 
-    > ./bin/init_auth.sh
-    
-    > ./bin/init_game.sh
+```bash
+cd cpsc449-project2/
+mkdir var
+```
+4. Run both the init scripts to populate the database and automatically connect the api to the database. 
+```bash
+./bin/init_auth.sh    
+./bin/init_game.sh
+````
 4. Start the services    
-    > foreman start -m auth=1,game=3   
+```bash
+foreman start -m auth=1,game=3  
+```
     
 Now the API can be run using Postman(the method which we followed) or using curl or httpie.
 
