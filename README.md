@@ -15,6 +15,7 @@ This project is about splitting monolith service that exposed two different sets
 
 Configuration files:
 1. Procfile is a mechanism for declaring what commands are run by your application to start the app 
+2. Update the nginx.config into default file present in /etc/nginx/sites-enabled
 
 The following are the steps to run the project:
 1. Installing and configuring Nginx:
