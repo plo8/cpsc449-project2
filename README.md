@@ -74,5 +74,5 @@ Ex: On postman with Basic-Auth: http://tuffix-vm/my-games
 ## ENDPOINT 6:
 Guessing a word: @app.route("/game/:gameId", methods=["PATCH"])
 ```bash
-Ex: On postman with Basic-Auth: http://tuffix-vm/game
+Ex: On postman with Basic-Auth: http://tuffix-vm/game/:gameId
 ```
