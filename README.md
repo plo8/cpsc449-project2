@@ -45,7 +45,6 @@ For authenticating the user:@app.route("/auth", methods=["GET"])
 ```bash
 Ex: On postman with Basic-Auth: http://tuffix-vm/auth
 ```
-
 ENDPOINT 3: 
 For creating a new game for an authenticated user:@app.route("/game/", methods=["POST"])
 ```bash
@@ -55,9 +54,14 @@ ENDPOINT 4:
 For getting the game state of the authenticated user:@app.route("/game/:gameId", methods=["GET"])
 ```bash
 Ex: On postman with Basic-Auth: http://tuffix-vm/game/:gameId
-```
- 
+``` 
 ENDPOINT 5:
 List all the games for the authenticated user:@app.route("/my-games", methods=["GET"])
 ```bash
 Ex: On postman with Basic-Auth: http://tuffix-vm/my-games  
+```
+ENDPOINT 6:
+Guessing a word: @app.route("/game/:gameId", methods=["PATCH"])
+```bash
+Ex: On postman with Basic-Auth: http://tuffix-vm/game
+```
