@@ -41,7 +41,8 @@ ENDPOINT 2:
 For authenticating the user:@app.route("/auth", methods=["GET"])
 ```bash
 Ex: On postman with Basic-Auth: http://tuffix-vm/auth
-   
+```
+
 ENDPOINT 3: 
 For creating a new game for an authenticated user:@app.route("/game/", methods=["POST"])
 ```bash
