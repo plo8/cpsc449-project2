@@ -13,17 +13,18 @@ Guided by Professor: Kenytt Avery @ProfAvery
 
 This project is about splitting monolith service that exposed two different sets of resources in project 1, into two separate microservices and authenticating the endpoints of each service.
 
+Configuration files:
+1. Procfile is a mechanism for declaring what commands are run by your application to start the app 
+
 The following are the steps to run the project:
 1. Clone the github repository https://github.com/plo8/cpsc449-project2.git
 2. Installing and configuring Nginx:
     > sudo apt update
     > sudo apt install --yes nginx-extras
-3. start the services    
+3. Run init.sh to populate the database and automatically connect the api to the database. 
+    > ./bin/init_auth.sh
+    > ./bin/init_game.sh
+4. start the services    
     > foreman start -m auth=1,game=3   
-
-Configuration files:
-1. Run init.sh to populate the database and automatically connect the api to the database. 
-    > ./bin/init.sh
-2. Procfile is a mechanism for declaring what commands are run by your application to start the app 
-
+    
 Now the API can be run using Postman(the method which we followed) or using curl or httpie.
